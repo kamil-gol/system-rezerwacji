@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Save, X, AlertCircle } from 'lucide-react';
 import Card from '../components/Card';
 import Button from '../components/Button';
@@ -11,7 +11,6 @@ import toast from 'react-hot-toast';
 import { format, addDays, parse } from 'date-fns';
 
 const ReservationForm: React.FC = () => {
-  const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [customers, setCustomers] = useState<any[]>([]);

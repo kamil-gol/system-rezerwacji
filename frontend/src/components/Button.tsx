@@ -33,8 +33,10 @@ const Button: React.FC<ButtonProps> = ({
     lg: 'px-6 py-3 text-lg',
   };
 
+  const MotionButton = motion.button;
+
   return (
-    <motion.button
+    <MotionButton
       whileHover={{ scale: disabled || loading ? 1 : 1.02 }}
       whileTap={{ scale: disabled || loading ? 1 : 0.98 }}
       className={`
@@ -53,7 +55,7 @@ const Button: React.FC<ButtonProps> = ({
           <span>{children}</span>
         </>
       )}
-    </motion.button>
+    </MotionButton>
   );
 };
 
