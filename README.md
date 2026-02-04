@@ -80,7 +80,7 @@ Edytuj `backend/.env`:
 DATABASE_URL=postgresql://postgres:postgres123@db:5432/gosciniec
 JWT_SECRET=twoj-super-tajny-klucz-jwt-min-32-znakow
 JWT_EXPIRES_IN=7d
-PORT=5000
+PORT=5002
 NODE_ENV=production
 
 # Email (SMTP)
@@ -101,19 +101,19 @@ cp .env.example .env
 Edytuj `frontend/.env`:
 
 ```env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:5002/api
 ```
 
 ### 3. Uruchomienie z Docker (REKOMENDOWANE)
 
 ```bash
 # Z głównego katalogu projektu
-docker-compose up -d
+docker-compose up -d --build
 ```
 
 Aplikacja będzie dostępna pod:
 - **Frontend:** http://localhost:3000
-- **Backend API:** http://localhost:5000
+- **Backend API:** http://localhost:5002
 - **PostgreSQL:** localhost:5432
 
 ### 4. Inicjalizacja bazy danych
@@ -286,7 +286,7 @@ cp frontend/.env.example frontend/.env
 ### 3. Uruchom
 
 ```bash
-docker-compose up -d
+docker-compose up -d --build
 
 # Sprawdź logi
 docker-compose logs -f
