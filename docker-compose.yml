@@ -1,66 +1,62 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: rezerwacje-db
-    restart: always
+  db:
+    image: postgres:15-alpine
+    container_name: gosciniec-db
     environment:
-      POSTGRES_DB: rezerwacje_db
-      POSTGRES_USER: rezerwacje_user
-      POSTGRES_PASSWORD: SuperSecure2024!
-    ports:
-      - '5432:5432'
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: gosciniec
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backup:/backup
+    ports:
+      - "5432:5432"
     networks:
-      - rezerwacje-network
+      - gosciniec-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: rezerwacje-backend
-    restart: always
+    container_name: gosciniec-backend
     environment:
+      DATABASE_URL: postgresql://postgres:postgres123@db:5432/gosciniec
+      JWT_SECRET: super-secret-jwt-key-change-in-production-min-32-chars
+      JWT_EXPIRES_IN: 7d
+      PORT: 5000
       NODE_ENV: production
-      DATABASE_URL: postgresql://rezerwacje_user:SuperSecure2024!@postgres:5432/rezerwacje_db
-      JWT_SECRET: SuperSecretJWT2024!ChangeThis
-      JWT_EXPIRES_IN: 24h
-      SMTP_HOST: smtp.gmail.com
-      SMTP_PORT: 587
-      SMTP_USER: your-email@gmail.com
-      SMTP_PASS: your-app-password
-      FRONTEND_URL: http://localhost:3000
     ports:
-      - '5000:5000'
+      - "5000:5000"
     depends_on:
-      - postgres
+      db:
+        condition: service_healthy
+    networks:
+      - gosciniec-network
     volumes:
       - ./backend/uploads:/app/uploads
-      - ./backend/pdfs:/app/pdfs
-    networks:
-      - rezerwacje-network
+      - ./backend/backups:/app/backups
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: rezerwacje-frontend
-    restart: always
-    environment:
-      REACT_APP_API_URL: http://localhost:5000/api
+    container_name: gosciniec-frontend
     ports:
-      - '3000:80'
+      - "3000:80"
     depends_on:
       - backend
     networks:
-      - rezerwacje-network
+      - gosciniec-network
 
 volumes:
   postgres_data:
 
 networks:
-  rezerwacje-network:
+  gosciniec-network:
     driver: bridge

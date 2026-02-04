@@ -1,237 +1,349 @@
-# 🏛️ System Rezerwacji Sal - Gościniec Rodzinny
+# 🏰 System Rezerwacji Sal - Gościniec Rodzinny
 
-## 📋 Opis
-
-Profesjonalny, modułowy system rezerwacji sal dla restauracji **Gościniec Rodzinny** (Świętochłowice). Enterprise-grade aplikacja z pięknym UX, pełną walidacją i ewidencją zmian.
+Kompletny system zarządzania rezerwacjami sal dla Gościniec Rodzinny. Full-stack aplikacja z React (Frontend), Node.js + Express (Backend), PostgreSQL (Baza danych) i Docker.
 
 ## 🚀 Funkcjonalności
 
-### Moduły:
-- ✅ **Rezerwacje** - pełne zarządzanie rezerwacjami sal
-- 👥 **Klienci** - baza danych klientów
-- 🔐 **Autentykacja** - bezpieczne logowanie
-- 📊 **Statystyki** - raporty i analizy
-- 🛡️ **Administracja** - zarządzanie systemem
-- 💾 **Backup** - automatyczne kopie zapasowe
+### ✨ Główne możliwości
+- **Zarządzanie rezerwacjami** - tworzenie, edycja, anulowanie rezerwacji
+- **Kalkulacja cen** - automatyczne obliczanie cen w czasie rzeczywistym (per osoba lub całościowa)
+- **System zaliczek** - obsługa zaliczek z terminami płatności
+- **Zarządzanie klientami** - baza danych klientów z historią rezerwacji
+- **Statystyki i raporty** - przychody, popularne wydarzenia, wykorzystanie sal
+- **Generowanie PDF** - automatyczne tworzenie potwierdzeń rezerwacji
+- **Wysyłka email** - automatyczne powiadomienia dla klientów
+- **Historia zmian** - pełna audytowalna historia wszystkich operacji
+- **Role użytkowników** - ADMIN, MANAGER, EMPLOYEE z różnymi uprawnieniami
+- **Panel administracyjny** - zarządzanie użytkownikami i logi systemowe
 
-### Główne cechy:
-- 📄 Generowanie PDF z rezerwacjami
-- 📧 Automatyczna wysyłka emaili
-- 💰 Kalkulacja cen (za osobę lub całość)
-- ⏱️ Domyślnie 6h rezerwacji z auto-dolicza niem
-- 💳 System zaliczek z terminem płatności
-- 📎 Załączniki do rezerwacji
-- 📜 Pełna historia zmian
-- 🔍 Walidacja wszystkich pól
-- 📱 Responsywny design
-- ✨ Piękne animacje (Framer Motion)
+### 🎯 Typy wydarzeń
+- Wesela
+- Urodziny
+- Rocznice
+- Spotkania biznesowe
+- Przyjęcia
+- Wigilie firmowe
+- Chrzciny
+- Komunie
 
-## 🏗️ Architektura
+## 🛠️ Technologie
+
+### Backend
+- **Node.js** + **Express.js**
+- **PostgreSQL** - relacyjna baza danych
+- **Prisma ORM** - type-safe database access
+- **JWT** - autentykacja
+- **Puppeteer** - generowanie PDF
+- **Nodemailer** - wysyłka email
+- **bcrypt** - hashowanie haseł
+
+### Frontend
+- **React 18** + **TypeScript**
+- **Vite** - build tool
+- **Tailwind CSS** - styling
+- **Framer Motion** - animacje
+- **React Router** - routing
+- **Axios** - HTTP client
+- **React Hook Form** + **Zod** - walidacja formularzy
+
+### DevOps
+- **Docker** + **Docker Compose**
+- **Nginx** - reverse proxy
+- **PostgreSQL 15**
+
+## 📦 Instalacja
+
+### Wymagania
+- Docker i Docker Compose
+- Node.js 20+ (opcjonalnie, dla lokalnego developmentu)
+- Git
+
+### 1. Sklonuj repozytorium
+
+```bash
+git clone https://github.com/kamil-gol/system-rezerwacji.git
+cd system-rezerwacji
+```
+
+### 2. Konfiguracja zmiennych środowiskowych
+
+#### Backend (.env)
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+Edytuj `backend/.env`:
+
+```env
+DATABASE_URL=postgresql://postgres:postgres123@db:5432/gosciniec
+JWT_SECRET=twoj-super-tajny-klucz-jwt-min-32-znakow
+JWT_EXPIRES_IN=7d
+PORT=5000
+NODE_ENV=production
+
+# Email (SMTP)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=twoj-email@gmail.com
+EMAIL_PASSWORD=twoje-haslo-aplikacji
+EMAIL_FROM=noreply@goscniecrodzinny.pl
+```
+
+#### Frontend (.env)
+
+```bash
+cd ../frontend
+cp .env.example .env
+```
+
+Edytuj `frontend/.env`:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+### 3. Uruchomienie z Docker (REKOMENDOWANE)
+
+```bash
+# Z głównego katalogu projektu
+docker-compose up -d
+```
+
+Aplikacja będzie dostępna pod:
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:5000
+- **PostgreSQL:** localhost:5432
+
+### 4. Inicjalizacja bazy danych
+
+Baza danych zostanie automatycznie zainicjalizowana przy pierwszym uruchomieniu.
+
+Aby załadować przykładowe dane (seed):
+
+```bash
+docker-compose exec backend npm run seed
+```
+
+## 👥 Konta testowe
+
+Po wykonaniu seed, dostępne są następujące konta:
+
+| Rola | Email | Hasło |
+|------|-------|-------|
+| **Admin** | admin@goscniecrodzinny.pl | Admin123!@#$ |
+| **Manager** | manager@goscniecrodzinny.pl | Manager123!@# |
+| **Pracownik** | pracownik@goscniecrodzinny.pl | Employee123!@ |
+
+## 📊 Struktura projektu
 
 ```
 system-rezerwacji/
-├── backend/         # Node.js + Express + TypeScript + Prisma
-├── frontend/        # React + TypeScript + Tailwind + Framer Motion
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma       # Schemat bazy danych
+│   │   └── seed.ts             # Dane testowe
+│   ├── src/
+│   │   ├── controllers/        # Kontrolery API
+│   │   ├── routes/             # Endpointy
+│   │   ├── middleware/         # Auth, error handling
+│   │   ├── services/           # PDF, Email
+│   │   └── index.ts            # Entry point
+│   ├── Dockerfile
+│   └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── components/         # Komponenty UI
+│   │   ├── pages/              # Strony aplikacji
+│   │   ├── context/            # React Context (Auth)
+│   │   ├── services/           # API calls
+│   │   └── utils/              # Formattery, helpery
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   └── package.json
 ├── docker-compose.yml
 └── README.md
 ```
 
-## 🛠️ Stack Technologiczny
+## 🔧 Development (bez Docker)
 
-- **Backend**: Node.js 20, Express, TypeScript, Prisma ORM
-- **Frontend**: React 18, TypeScript, Tailwind CSS, Framer Motion
-- **Baza danych**: PostgreSQL 16
-- **Konteneryzacja**: Docker + Docker Compose
-- **PDF**: Puppeteer
-- **Email**: Nodemailer
-- **Autentykacja**: JWT + bcrypt
-
-## 📦 Instalacja i Uruchomienie
-
-### Wymagania:
-- Docker Desktop
-- Docker Compose
-
-### Szybki start:
+### Backend
 
 ```bash
-# 1. Sklonuj repozytorium
+cd backend
+npm install
+npm run dev
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## 🗄️ Schemat bazy danych
+
+### Główne tabele
+
+- **users** - Użytkownicy systemu (role: ADMIN, MANAGER, EMPLOYEE)
+- **customers** - Klienci (dane kontaktowe, firma, NIP)
+- **rooms** - Sale (nazwa, pojemność, ceny)
+- **reservations** - Rezerwacje (wszystkie szczegóły)
+- **reservation_history** - Historia zmian rezerwacji
+- **audit_logs** - Logi systemowe
+
+## 🌐 API Endpoints
+
+### Auth
+- `POST /api/auth/login` - Logowanie
+- `POST /api/auth/logout` - Wylogowanie
+- `POST /api/auth/change-password` - Zmiana hasła
+
+### Reservations
+- `GET /api/reservations` - Lista rezerwacji (z filtrowaniem)
+- `GET /api/reservations/:id` - Szczegóły rezerwacji
+- `POST /api/reservations` - Nowa rezerwacja
+- `PUT /api/reservations/:id` - Aktualizacja
+- `DELETE /api/reservations/:id` - Anulowanie
+- `GET /api/reservations/upcoming` - Nadchodzące rezerwacje
+- `GET /api/reservations/:id/pdf` - Generuj PDF
+- `POST /api/reservations/:id/send-email` - Wyślij email
+
+### Customers
+- `GET /api/customers` - Lista klientów
+- `GET /api/customers/:id` - Szczegóły klienta
+- `POST /api/customers` - Nowy klient
+- `PUT /api/customers/:id` - Aktualizacja
+
+### Rooms
+- `GET /api/rooms` - Lista sal
+- `GET /api/rooms/:id/availability` - Sprawdź dostępność
+
+### Statistics
+- `GET /api/statistics/overview` - Przegląd statystyk
+- `GET /api/statistics/revenue` - Przychody
+- `GET /api/statistics/popular-events` - Popularne wydarzenia
+- `GET /api/statistics/room-utilization` - Wykorzystanie sal
+
+### Admin (tylko ADMIN)
+- `GET /api/admin/users` - Lista użytkowników
+- `POST /api/admin/users` - Nowy użytkownik
+- `PUT /api/admin/users/:id` - Aktualizacja
+- `DELETE /api/admin/users/:id` - Dezaktywacja
+- `GET /api/admin/logs` - Logi systemowe
+
+## 🎨 Screenshoty
+
+### Dashboard
+- Karty ze statystykami (aktywne rezerwacje, przychody)
+- Lista nadchodzących rezerwacji
+- Szybki dostęp do nowej rezerwacji
+
+### Formularz rezerwacji
+- **Kalkulacja cen w czasie rzeczywistym**
+- Walidacja pojemności sal
+- Obsługa zaliczek z terminami
+- Specjalne życzenia klienta
+
+### Lista rezerwacji
+- Filtrowanie po statusie
+- Wyszukiwanie
+- Paginacja
+- Pobieranie PDF / wysyłka email
+
+### Statystyki
+- Popularne wydarzenia
+- Wykorzystanie sal
+- Top 10 klientów
+
+## 🚢 Deployment (Production)
+
+### 1. Przygotowanie serwera
+
+```bash
+# Zainstaluj Docker i Docker Compose na serwerze
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo apt install docker-compose
+```
+
+### 2. Sklonuj i skonfiguruj
+
+```bash
 git clone https://github.com/kamil-gol/system-rezerwacji.git
 cd system-rezerwacji
 
-# 2. Uruchom wszystko jedną komendą
-docker-compose up --build
+# Skonfiguruj .env (pamiętaj o silnych hasłach!)
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 
-# 3. Aplikacja dostępna:
-# - Frontend: http://localhost:3000
-# - Backend API: http://localhost:5000
-# - PostgreSQL: localhost:5432
+# Edytuj pliki .env zgodnie z Twoim środowiskiem
 ```
 
-### Pierwsze logowanie:
+### 3. Uruchom
 
-**Konto administratora:**
-- Login: `admin@goscinie crodzinny.pl`
-- Hasło: `Admin123!@#$`
+```bash
+docker-compose up -d
 
-**Konto managera:**
-- Login: `manager@goscniecrodzinny.pl`
-- Hasło: `Manager123!@#`
+# Sprawdź logi
+docker-compose logs -f
 
-## 🔧 Konfiguracja
+# Załaduj seed (opcjonalnie)
+docker-compose exec backend npm run seed
+```
 
-Edytuj `docker-compose.yml` aby dostosować:
-- Dane SMTP (email)
-- JWT Secret
-- Hasła bazy danych
+### 4. Backup bazy danych
 
-## 📖 Dokumentacja API
+```bash
+# Backup
+docker-compose exec db pg_dump -U postgres gosciniec > backup.sql
 
-Po uruchomieniu dostępna pod: `http://localhost:5000/api-docs`
-
-### Główne endpointy:
-
-#### Autentykacja
-- `POST /api/auth/login` - logowanie
-- `POST /api/auth/refresh` - odświeżenie tokena
-- `POST /api/auth/logout` - wylogowanie
-
-#### Rezerwacje
-- `GET /api/reservations` - lista rezerwacji (paginacja)
-- `POST /api/reservations` - nowa rezerwacja
-- `GET /api/reservations/:id` - szczegóły rezerwacji
-- `PUT /api/reservations/:id` - edycja (wymaga powodu)
-- `DELETE /api/reservations/:id` - anulowanie (wymaga powodu)
-- `GET /api/reservations/:id/pdf` - generowanie PDF
-- `POST /api/reservations/:id/send-email` - wysyłka email
-- `GET /api/reservations/upcoming` - nadchodzące rezerwacje
-- `GET /api/reservations/:id/history` - historia zmian
-
-#### Klienci
-- `GET /api/customers` - lista klientów
-- `POST /api/customers` - nowy klient
-- `GET /api/customers/:id` - szczegóły klienta
-- `PUT /api/customers/:id` - edycja klienta
-
-#### Sale
-- `GET /api/rooms` - lista sal
-- `GET /api/rooms/:id/availability` - dostępność sali
-
-#### Statystyki
-- `GET /api/statistics/overview` - przegląd statystyk
-- `GET /api/statistics/revenue` - przychody
-- `GET /api/statistics/popular-events` - popularne wydarzenia
-
-#### Backup
-- `POST /api/backup/create` - tworzenie backupu
-- `GET /api/backup/list` - lista backupów
-- `POST /api/backup/restore/:id` - przywracanie
-
-## 🎨 Sale
-
-1. **Sala Kryształowa** - max 40 osób
-2. **Sala Bankietowa** - max 80 osób
-3. **Sala Rodzinna** - max 25 osób
-4. **Sala VIP** - max 15 osób
-
-## 📅 Typy Wydarzeń
-
-- 💍 Wesele
-- 🎂 Urodziny
-- 💼 Spotkanie biznesowe
-- 🎓 Rocznica
-- 🎉 Przyjęcie okolicznościowe
-- 🎄 Wigilia firmowa
-- 👶 Chrzciny
-- 💐 Komunie
+# Restore
+docker-compose exec -T db psql -U postgres gosciniec < backup.sql
+```
 
 ## 🔒 Bezpieczeństwo
 
-- Hasła: min. 12 znaków, duże/małe litery, cyfry, znaki specjalne
-- Szyfrowanie haseł: bcrypt (10 rounds)
-- Tokeny JWT z expiracją
-- Walidacja wszystkich inputów
-- Rate limiting na API
-- SQL Injection protection (Prisma)
-- XSS protection
-- CORS configuration
+- ✅ JWT token-based authentication
+- ✅ Bcrypt password hashing (12 rounds)
+- ✅ Role-based access control (RBAC)
+- ✅ Input validation (Zod schemas)
+- ✅ SQL injection protection (Prisma ORM)
+- ✅ XSS protection
+- ✅ CORS configuration
+- ✅ Rate limiting (opcjonalnie)
+- ✅ Audit logs dla wszystkich akcji
 
-## 📊 Funkcje Specjalne
+## 📝 TODO / Przyszłe funkcjonalności
 
-### Kalkulacja Ceny
-- **Opcja 1**: Cena za osobę × liczba osób
-- **Opcja 2**: Cena całościowa (stała)
-- Auto-przeliczanie w czasie rzeczywistym
+- [ ] Kalendarz z wizualizacją dostępności sal
+- [ ] Powiadomienia push
+- [ ] Integracja z płatnościami online
+- [ ] Eksport raportów do Excel
+- [ ] Aplikacja mobilna (React Native)
+- [ ] Multi-tenancy (wiele lokalizacji)
+- [ ] Zaawansowane raporty (Analytics)
 
-### Zarządzanie Czasem
-- Domyślnie: 6 godzin
-- Powyżej 6h: automatyczny wpis w uwagach
-- Format dat: `dd.mm.yyyy`
+## 🤝 Contributing
 
-### Zaliczki
-- Wymagane pole: kwota i termin
-- Walidacja: max 1 dzień przed wydarzeniem
-- Przypomnienia email
+Chętnie przyjmujemy pull requesty! Przed rozpoczęciem pracy nad większą zmianą, otwórz issue, aby przedyskutować proponowane zmiany.
 
-### Historia Zmian
-- Każda edycja wymaga powodu
-- Każde anulowanie wymaga powodu
-- Pełny audit log z timestampami
-- Informacja o użytkowniku wykonującym zmianę
+## 📄 Licencja
 
-## 🧪 Dane Testowe
+MIT License - patrz [LICENSE](LICENSE)
 
-System zawiera:
-- 3 użytkowników (Admin, Manager, Pracownik)
-- 15 klientów testowych
-- 20 rezerwacji (przeszłe, obecne, przyszłe)
-- 4 sale konferencyjne
-- 8 typów wydarzeń
+## 👨‍💻 Autor
 
-## 🚀 Deployment
+**Kamil Gol**
+- GitHub: [@kamil-gol](https://github.com/kamil-gol)
 
-### Produkcja:
+## 💬 Wsparcie
 
-```bash
-# Build production images
-docker-compose -f docker-compose.prod.yml build
-
-# Deploy
-docker-compose -f docker-compose.prod.yml up -d
-
-# Migrations
-docker exec rezerwacje-backend npx prisma migrate deploy
-```
-
-## 🐛 Troubleshooting
-
-### Problem z połączeniem do bazy:
-```bash
-docker-compose down -v
-docker-compose up --build
-```
-
-### Resetowanie bazy danych:
-```bash
-docker exec rezerwacje-backend npx prisma migrate reset
-```
-
-### Logi:
-```bash
-docker-compose logs -f backend
-docker-compose logs -f frontend
-```
-
-## 📞 Kontakt
-
-**Gościniec Rodzinny**
-- Adres: ul. Bukowa 155, 41-600 Świętochłowice
-- Web: [goscniecrodzinny.pl](https://goscniecrodzinny.pl)
-
-## 📝 Licencja
-
-MIT License - © 2026 Gościniec Rodzinny
+Masz pytania? Otwórz issue lub skontaktuj się przez GitHub.
 
 ---
 
-**Made with ❤️ for Gościniec Rodzinny**
+⭐ Jeśli projekt Ci się podoba, zostaw gwiazdkę na GitHub!
