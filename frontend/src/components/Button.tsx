@@ -2,12 +2,16 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import LoadingSpinner from './LoadingSpinner';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'danger' | 'success';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   icon?: React.ReactNode;
   children: React.ReactNode;
+  className?: string;
+  disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -18,7 +22,8 @@ const Button: React.FC<ButtonProps> = ({
   children,
   className = '',
   disabled,
-  ...props
+  type = 'button',
+  onClick,
 }) => {
   const variantClasses = {
     primary: 'bg-primary-600 hover:bg-primary-700 text-white',
@@ -33,10 +38,11 @@ const Button: React.FC<ButtonProps> = ({
     lg: 'px-6 py-3 text-lg',
   };
 
-  const MotionButton = motion.button;
-
   return (
-    <MotionButton
+    <motion.button
+      type={type}
+      onClick={onClick}
+      disabled={disabled || loading}
       whileHover={{ scale: disabled || loading ? 1 : 1.02 }}
       whileTap={{ scale: disabled || loading ? 1 : 0.98 }}
       className={`
@@ -44,8 +50,6 @@ const Button: React.FC<ButtonProps> = ({
         transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
         ${variantClasses[variant]} ${sizeClasses[size]} ${className}
       `}
-      disabled={disabled || loading}
-      {...props}
     >
       {loading ? (
         <LoadingSpinner size="sm" className="text-current" />
@@ -55,7 +59,7 @@ const Button: React.FC<ButtonProps> = ({
           <span>{children}</span>
         </>
       )}
-    </MotionButton>
+    </motion.button>
   );
 };
 
