@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: rezerwacje-db
+    restart: always
+    environment:
+      POSTGRES_DB: rezerwacje_db
+      POSTGRES_USER: rezerwacje_user
+      POSTGRES_PASSWORD: SuperSecure2024!
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backup:/backup
+    networks:
+      - rezerwacje-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rezerwacje-backend
+    restart: always
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://rezerwacje_user:SuperSecure2024!@postgres:5432/rezerwacje_db
+      JWT_SECRET: SuperSecretJWT2024!ChangeThis
+      JWT_EXPIRES_IN: 24h
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_USER: your-email@gmail.com
+      SMTP_PASS: your-app-password
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - '5000:5000'
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/pdfs:/app/pdfs
+    networks:
+      - rezerwacje-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: rezerwacje-frontend
+    restart: always
+    environment:
+      REACT_APP_API_URL: http://localhost:5000/api
+    ports:
+      - '3000:80'
+    depends_on:
+      - backend
+    networks:
+      - rezerwacje-network
+
+volumes:
+  postgres_data:
+
+networks:
+  rezerwacje-network:
+    driver: bridge
