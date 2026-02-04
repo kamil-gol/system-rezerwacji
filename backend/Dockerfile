@@ -2,41 +2,39 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
+# Copy package files
 COPY package*.json ./
-RUN npm ci
+COPY prisma ./prisma/
 
-# Copy source
+# Install all dependencies
+RUN npm install
+
+# Copy source code
 COPY . .
 
-# Generate Prisma client
+# Generate Prisma Client
 RUN npx prisma generate
 
 # Build TypeScript
 RUN npm run build
 
-# Production image
+# Production stage
 FROM node:20-alpine
 
 WORKDIR /app
 
 # Install production dependencies
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install --omit=dev
 
 # Copy built app and Prisma
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/prisma ./prisma
 
-# Create directories
-RUN mkdir -p /app/uploads /app/pdfs
-
-# Install Chromium for Puppeteer
-RUN apk add --no-cache chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+# Create directories for uploads and backups
+RUN mkdir -p uploads backups
 
 EXPOSE 5000
 
-CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && node dist/server.js"]
+CMD ["node", "dist/index.js"]
