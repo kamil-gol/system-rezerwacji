@@ -29,10 +29,10 @@ services:
       DATABASE_URL: postgresql://postgres:postgres123@db:5432/gosciniec
       JWT_SECRET: super-secret-jwt-key-change-in-production-min-32-chars
       JWT_EXPIRES_IN: 7d
-      PORT: 5000
+      PORT: 5002
       NODE_ENV: production
     ports:
-      - "5000:5000"
+      - "5002:5002"
     depends_on:
       db:
         condition: service_healthy

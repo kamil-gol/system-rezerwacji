@@ -35,6 +35,6 @@ COPY --from=builder /app/prisma ./prisma
 # Create directories for uploads and backups
 RUN mkdir -p uploads backups
 
-EXPOSE 5000
+EXPOSE 5002
 
 CMD ["node", "dist/index.js"]
