@@ -3,30 +3,15 @@ import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { generateReservationPDF } from './pdfGenerator';
 
-const transporter = nodemailer.createTransporter({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || '587'),
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.EMAIL_PORT || '587'),
   secure: false,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD
   }
 });
-
-interface ReservationEmailData {
-  reservationNumber: string;
-  customer: {
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
-  room: { name: string };
-  eventType: string;
-  eventDate: Date;
-  startTime: string;
-  numberOfGuests: number;
-  finalAmount: any;
-}
 
 export const sendReservationConfirmation = async (reservation: any) => {
   const eventTypeLabels: Record<string, string> = {
@@ -43,7 +28,7 @@ export const sendReservationConfirmation = async (reservation: any) => {
   const pdfPath = await generateReservationPDF(reservation);
   
   const mailOptions = {
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
     to: reservation.customer.email,
     subject: `Potwierdzenie rezerwacji ${reservation.reservationNumber} - Gościniec Rodzinny`,
     html: `

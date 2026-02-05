@@ -1,120 +1,163 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
+import { Request, Response } from 'express';
 import { prisma } from '../server';
-import bcrypt from 'bcryptjs';
-import { passwordSchema } from '../utils/validators';
+import { z } from 'zod';
+import bcrypt from 'bcrypt';
 
-export const getUsers = async (req: AuthRequest, res: Response) => {
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      role: true,
-      isActive: true,
-      lastLogin: true,
-      createdAt: true
-    },
-    orderBy: { createdAt: 'desc' }
-  });
-  
-  res.json(users);
-};
-
-export const createUser = async (req: AuthRequest, res: Response) => {
-  const { email, password, firstName, lastName, role } = req.body;
-  
-  passwordSchema.parse(password);
-  
-  const existingUser = await prisma.user.findUnique({ where: { email } });
-  if (existingUser) {
-    return res.status(409).json({ error: 'Użytkownik o tym emailu już istnieje' });
-  }
-  
-  const hashedPassword = await bcrypt.hash(password, 10);
-  
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
-      firstName,
-      lastName,
-      role: role || 'EMPLOYEE'
-    },
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      role: true,
-      isActive: true
-    }
-  });
-  
-  res.status(201).json(user);
-};
-
-export const updateUser = async (req: AuthRequest, res: Response) => {
-  const { password, ...data } = req.body;
-  
-  let updateData: any = data;
-  
-  if (password) {
-    passwordSchema.parse(password);
-    updateData.password = await bcrypt.hash(password, 10);
-  }
-  
-  const user = await prisma.user.update({
-    where: { id: req.params.id },
-    data: updateData,
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      role: true,
-      isActive: true
-    }
-  });
-  
-  res.json(user);
-};
-
-export const deleteUser = async (req: AuthRequest, res: Response) => {
-  if (req.params.id === req.user!.id) {
-    return res.status(400).json({ error: 'Nie możesz usunąć własnego konta' });
-  }
-  
-  await prisma.user.update({
-    where: { id: req.params.id },
-    data: { isActive: false }
-  });
-  
-  res.json({ message: 'Użytkownik dezaktywowany' });
-};
-
-export const getSystemLogs = async (req: AuthRequest, res: Response) => {
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 50;
-  const level = req.query.level as string;
-  const skip = (page - 1) * limit;
-  
-  const where: any = {};
-  if (level) where.level = level;
-  
-  const [logs, total] = await Promise.all([
-    prisma.systemLog.findMany({
-      where,
-      skip,
-      take: limit,
+export const getUsers = async (_req: Request, res: Response) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true
+      },
       orderBy: { createdAt: 'desc' }
-    }),
-    prisma.systemLog.count({ where })
-  ]);
-  
-  res.json({
-    data: logs,
-    pagination: { page, limit, total, pages: Math.ceil(total / limit) }
-  });
+    });
+    
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Błąd pobierania użytkowników' });
+  }
+};
+
+export const createUser = async (req: Request, res: Response) => {
+  try {
+    const schema = z.object({
+      email: z.string().email(),
+      password: z.string().min(8),
+      firstName: z.string().min(2),
+      lastName: z.string().min(2),
+      role: z.enum(['EMPLOYEE', 'MANAGER', 'ADMIN'])
+    });
+    
+    const data = schema.parse(req.body);
+    
+    const existing = await prisma.user.findUnique({
+      where: { email: data.email }
+    });
+    
+    if (existing) {
+      return res.status(400).json({ error: 'Email już istnieje' });
+    }
+    
+    const hashedPassword = await bcrypt.hash(data.password, 12);
+    
+    const user = await prisma.user.create({
+      data: {
+        ...data,
+        password: hashedPassword
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true
+      }
+    });
+    
+    res.status(201).json(user);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Nieprawidłowe dane', details: error.errors });
+    }
+    res.status(500).json({ error: 'Błąd tworzenia użytkownika' });
+  }
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    const schema = z.object({
+      email: z.string().email().optional(),
+      password: z.string().min(8).optional(),
+      firstName: z.string().min(2).optional(),
+      lastName: z.string().min(2).optional(),
+      role: z.enum(['EMPLOYEE', 'MANAGER', 'ADMIN']).optional()
+    });
+    
+    const data = schema.parse(req.body);
+    
+    const updateData: any = { ...data };
+    
+    if (data.password) {
+      updateData.password = await bcrypt.hash(data.password, 12);
+    }
+    
+    const user = await prisma.user.update({
+      where: { id },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true
+      }
+    });
+    
+    res.json(user);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Nieprawidłowe dane', details: error.errors });
+    }
+    res.status(500).json({ error: 'Błąd aktualizacji użytkownika' });
+  }
+};
+
+export const deleteUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    await prisma.user.update({
+      where: { id },
+      data: { isActive: false }
+    });
+    
+    res.json({ message: 'Użytkownik dezaktywowany' });
+  } catch (error) {
+    res.status(500).json({ error: 'Błąd usuwania użytkownika' });
+  }
+};
+
+export const getLogs = async (req: Request, res: Response) => {
+  try {
+    const { limit = 50, offset = 0 } = req.query;
+    
+    const logs = await prisma.auditLog.findMany({
+      take: Number(limit),
+      skip: Number(offset),
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        }
+      }
+    });
+    
+    const total = await prisma.auditLog.count();
+    
+    res.json({
+      data: logs,
+      pagination: {
+        total,
+        limit: Number(limit),
+        offset: Number(offset)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Błąd pobierania logów' });
+  }
 };
