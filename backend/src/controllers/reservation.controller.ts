@@ -163,7 +163,7 @@ export const createReservation = async (req: AuthRequest, res: Response) => {
       pricingType: data.pricingType,
       pricePerPerson: data.pricePerPerson ? new Prisma.Decimal(data.pricePerPerson) : null,
       totalPrice: data.totalPrice ? new Prisma.Decimal(data.totalPrice) : null,
-      finalAmount: new Prisma.Decimal(finalAmount),
+      finalAmount: new Prisma.Decimal(finalAmount || 0),
       depositRequired: data.depositRequired,
       depositAmount: data.depositAmount ? new Prisma.Decimal(data.depositAmount) : null,
       depositDueDate: data.depositDueDate ? parseDate(data.depositDueDate) : null,
@@ -233,7 +233,7 @@ export const updateReservation = async (req: AuthRequest, res: Response) => {
       pricePerPerson: data.pricePerPerson !== undefined ? data.pricePerPerson : (existing.pricePerPerson ? existing.pricePerPerson.toNumber() : 0),
       totalPrice: data.totalPrice !== undefined ? data.totalPrice : (existing.totalPrice ? existing.totalPrice.toNumber() : 0)
     });
-    updateData.finalAmount = new Prisma.Decimal(calculatedAmount);
+    updateData.finalAmount = new Prisma.Decimal(calculatedAmount || 0);
   }
   
   // Handle auto-generated notes
