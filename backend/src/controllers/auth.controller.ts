@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import jwt, { SignOptions } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { prisma } from '../server';
 import { AuthRequest } from '../middleware/auth';
 import { passwordSchema } from '../utils/validators';
@@ -26,21 +26,16 @@ export const login = async (req: Request, res: Response) => {
       data: { lastLogin: new Date() }
     });
     
-    const jwtSecret = process.env.JWT_SECRET || 'default-secret-key';
-    const jwtOptions: SignOptions = {
-      expiresIn: process.env.JWT_EXPIRES_IN || '24h'
-    };
-    
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
-      jwtSecret,
-      jwtOptions
+      process.env.JWT_SECRET!,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' } as jwt.SignOptions
     );
     
     const refreshToken = jwt.sign(
       { userId: user.id },
-      jwtSecret,
-      { expiresIn: '7d' } as SignOptions
+      process.env.JWT_SECRET!,
+      { expiresIn: '7d' } as jwt.SignOptions
     );
     
     res.json({
@@ -67,8 +62,7 @@ export const refreshToken = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Brak tokenu' });
     }
     
-    const jwtSecret = process.env.JWT_SECRET || 'default-secret-key';
-    const decoded = jwt.verify(refreshToken, jwtSecret) as any;
+    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET!) as any;
     
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId }
@@ -80,8 +74,8 @@ export const refreshToken = async (req: Request, res: Response) => {
     
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
-      jwtSecret,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' } as SignOptions
+      process.env.JWT_SECRET!,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' } as jwt.SignOptions
     );
     
     res.json({ token });

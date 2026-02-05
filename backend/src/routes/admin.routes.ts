@@ -5,7 +5,7 @@ import * as adminController from '../controllers/admin.controller';
 const router = Router();
 
 router.use(authenticate);
-router.use(authorize(['ADMIN']));
+router.use(authorize('ADMIN'));
 
 router.get('/users', adminController.getUsers);
 router.post('/users', adminController.createUser);
